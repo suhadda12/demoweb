@@ -21,12 +21,10 @@ pipeline {
                 }
 
                 sh '''
-                    echo "Nama file ZIP: $ZIP_FILE"
+                    echo "Menghapus semua file ZIP lama..."
+                    rm -f ${REPO_NAME}_*.zip || true
 
-                    echo "Menghapus file ZIP lama (jika ada)..."
-                    rm -f $ZIP_FILE
-
-                    echo "Membuat file ZIP baru dengan timestamp..."
+                    echo "Membuat ZIP baru: $ZIP_FILE"
                     zip -r $ZIP_FILE . -x $ZIP_FILE
                 '''
             }
