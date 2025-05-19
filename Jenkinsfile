@@ -15,17 +15,17 @@ pipeline {
         stage('Archive to Zip with Timestamp') {
             steps {
                 script {
-                    // Format timestamp: YYYYMMDD_HHMMSS
+                    // Format timestamp: YYYYMMDD_HHmmss
                     def timestamp = new Date().format("yyyyMMdd_HHmmss", TimeZone.getTimeZone('Asia/Jakarta'))
                     env.ZIP_FILE = "${env.REPO_NAME}_${timestamp}.zip"
                 }
 
                 sh '''
-                    echo "Menghapus semua file ZIP lama..."
+                    echo "Menghapus semua ZIP lama..."
                     rm -f ${REPO_NAME}_*.zip || true
 
-                    echo "Membuat ZIP baru: $ZIP_FILE"
-                    zip -r $ZIP_FILE . -x $ZIP_FILE
+                    echo "Membuat ZIP baru (tanpa .git)..."
+                    zip -r $ZIP_FILE . -x ".git/*"
                 '''
             }
         }
