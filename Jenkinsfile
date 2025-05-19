@@ -25,7 +25,7 @@ pipeline {
                     rm -f ${REPO_NAME}_*.zip || true
 
                     echo "Membuat ZIP baru (tanpa .git)..."
-                    zip -r $ZIP_FILE . -x ".git/*"
+                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile"
                 '''
             }
         }
