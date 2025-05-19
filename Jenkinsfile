@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         REPO_NAME = 'tester-web1'
-        ZIP_FILE = "${REPO_NAME}.zip"
     }
 
     stages {
@@ -13,13 +12,21 @@ pipeline {
             }
         }
 
-        stage('Archive to Zip') {
+        stage('Archive to Zip with Timestamp') {
             steps {
+                script {
+                    // Format timestamp: YYYYMMDD_HHMMSS
+                    def timestamp = new Date().format("yyyyMMdd_HHmmss", TimeZone.getTimeZone('Asia/Jakarta'))
+                    env.ZIP_FILE = "${env.REPO_NAME}_${timestamp}.zip"
+                }
+
                 sh '''
-                    echo "Menghapus file ZIP lama jika ada..."
+                    echo "Nama file ZIP: $ZIP_FILE"
+
+                    echo "Menghapus file ZIP lama (jika ada)..."
                     rm -f $ZIP_FILE
 
-                    echo "Membuat file ZIP baru..."
+                    echo "Membuat file ZIP baru dengan timestamp..."
                     zip -r $ZIP_FILE . -x $ZIP_FILE
                 '''
             }
