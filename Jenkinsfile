@@ -15,7 +15,19 @@ pipeline {
 
         stage('Archive to Zip') {
             steps {
-                sh 'zip -r $ZIP_FILE .'
+                sh '''
+                    # Hapus ZIP lama jika ada
+                    rm -f $ZIP_FILE
+
+                    # Buat ZIP baru, exclude dirinya sendiri
+                    zip -r $ZIP_FILE . -x $ZIP_FILE
+                '''
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                sh 'rm -f $ZIP_FILE'
             }
         }
     }
