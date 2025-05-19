@@ -16,18 +16,12 @@ pipeline {
         stage('Archive to Zip') {
             steps {
                 sh '''
-                    # Hapus ZIP lama jika ada
+                    echo "Menghapus file ZIP lama jika ada..."
                     rm -f $ZIP_FILE
 
-                    # Buat ZIP baru, exclude dirinya sendiri
+                    echo "Membuat file ZIP baru..."
                     zip -r $ZIP_FILE . -x $ZIP_FILE
                 '''
-            }
-        }
-
-        stage('Clean Up') {
-            steps {
-                sh 'rm -f $ZIP_FILE'
             }
         }
     }
