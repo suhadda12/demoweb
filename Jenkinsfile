@@ -33,7 +33,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-to-apptest', keyFileVariable: 'SSH_KEY')]) {
                     sh '''
-                        rsync -avzp -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" $ZIP_FILE ubuntu@192.168.137.111:/home/ubuntu/artifactory/
+                        rsync -avzp -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=yes" $ZIP_FILE ubuntu@192.168.137.111:/home/ubuntu/artifactory/
                     '''
                 }
             }
