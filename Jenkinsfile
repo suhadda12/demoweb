@@ -15,7 +15,6 @@ pipeline {
         stage('Archive to Zip with Timestamp') {
             steps {
                 script {
-                    // Format timestamp: YYYYMMDD_HHmmss
                     def timestamp = new Date().format("yyyyMMdd_HHmmss", TimeZone.getTimeZone('Asia/Jakarta'))
                     env.ZIP_FILE = "${env.REPO_NAME}_${timestamp}.zip"
                 }
@@ -30,12 +29,11 @@ pipeline {
             }
         }
 
-        stage('Send artifact via Rsync') {
+        stage('Deploy via Rsync (Direct SSH)') {
             steps {
-                sshagent(['jenkins-to-apptest']) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-to-apptest', keyFileVariable: 'SSH_KEY')]) {
                     sh '''
-                        echo "Mengirim ZIP ke server via rsync..."
-                        rsync -avzp $ZIP_FILE ubuntu@192.168.137.111:/home/ubuntu/artifactory/
+                        rsync -avzp -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" $ZIP_FILE ubuntu@192.168.137.111:/home/ubuntu/artifactory/
                     '''
                 }
             }
