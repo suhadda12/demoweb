@@ -20,11 +20,8 @@ pipeline {
                 }
 
                 sh '''
-                    echo "Menghapus semua ZIP lama..."
-                    rm -f ${REPO_NAME}_*.zip || true
-
                     echo "Membuat ZIP baru (tanpa .git dan Jenkinsfile)..."
-                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile"
+                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile" ".workflow"
                 '''
             }
         }
@@ -36,6 +33,12 @@ pipeline {
                         rsync -avzp -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=yes" $ZIP_FILE ubuntu@192.168.137.111:/home/ubuntu/artifactory/
                     '''
                 }
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                sh 'rm -f $ZIP_FILE'
             }
         }
     }
