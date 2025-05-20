@@ -21,7 +21,7 @@ pipeline {
 
                 sh '''
                     echo "Membuat ZIP baru (tanpa .git dan Jenkinsfile)..."
-                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile" ".workflow"
+                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile" ".workflow" || exit 1
                 '''
             }
         }
@@ -36,6 +36,17 @@ pipeline {
             }
         }
 
+        stage('Upload to Artifactory via CURL') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jfrog-cred1', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
+                    sh '''
+                        echo "Upload file ke Artifactory..."
+                        curl -u$ART_USER:$ART_PASS -T $ZIP_FILE http://192.168.137.111:8081/artifactory/tester-web1/$ZIP_FILE
+                    '''
+                }
+            }
+        }
+        
         stage('Clean Up') {
             steps {
                 sh 'rm -f $ZIP_FILE'
