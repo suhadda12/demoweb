@@ -21,7 +21,7 @@ pipeline {
 
                 sh '''
                     echo "Membuat ZIP baru (tanpa .git dan Jenkinsfile)..."
-                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile" ".workflow" || exit 1
+                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile" ".workflow"
                 '''
             }
         }
