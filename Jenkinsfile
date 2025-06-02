@@ -30,7 +30,7 @@ pipeline {
             steps {
                 script {
                     def server = ""
-                    if (env.BRANCH_NAME == "master") {
+                    if (env.BRANCH_NAME == "main") {
                         server = "ubuntu@192.168.137.111"
                     } else if (env.BRANCH_NAME.startsWith("test/")) {
                         server = "ubuntu@192.168.137.222"
@@ -52,8 +52,8 @@ pipeline {
             steps {
                 script {
                     def artifactoryPath = ""
-                    if (env.BRANCH_NAME == "master") {
-                        artifactoryPath = "master"
+                    if (env.BRANCH_NAME == "main") {
+                        artifactoryPath = "main"
                     } else if (env.BRANCH_NAME.startsWith("test/")) {
                         artifactoryPath = "test"
                     } else {
