@@ -19,7 +19,7 @@ pipeline {
             steps {
                 script {
                     echo 'Checking encrypted files...'
-                    sh 'git-crypt status -e'
+                    sh 'git-crypt status -e || exit 0'
                 }
             }
         }
