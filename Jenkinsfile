@@ -6,6 +6,9 @@ pipeline {
         TEST_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/test'
         LIVE_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/main'
         SSH_PORT = '22'
+        ART_SERVER_ID = 'my-artifactory'
+        TEST_ART_REPO_PATH = 'tester-web1/test/'
+        LIVE_ART_REPO_PATH = 'tester-web1/live/'
     }
 
     stages {
@@ -58,6 +61,29 @@ pipeline {
                         """
                     } else {
                         echo "No deployment target for branch: ${env.BRANCH_NAME}. Skipping deployment."
+                    }
+                }
+            }
+        }
+
+        stage('Upload to Artifactory') {
+            steps {
+                script {
+                    def repoPath = null
+
+                    if (env.BRANCH_NAME == 'main') {
+                        repoPath = env.LIVE_ART_REPO_PATH
+                    } else if (env.BRANCH_NAME.startsWith('test/')) {
+                        repoPath = env.TEST_ART_REPO_PATH
+                    }
+
+                    if (repoPath) {
+                        echo "Uploading to Artifactory path: ${repoPath}"
+                        sh """
+                            jfrog rt upload ~/mystore/${env.ZIP_FILE} "${repoPath}" --server-id=${env.ART_SERVER_ID}
+                        """
+                    } else {
+                        echo "Skipping Artifactory upload: unsupported branch ${env.BRANCH_NAME}"
                     }
                 }
             }
