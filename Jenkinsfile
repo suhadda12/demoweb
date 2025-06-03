@@ -80,7 +80,7 @@ pipeline {
                     if (repoPath) {
                         echo "Uploading to Artifactory path: ${repoPath}"
                         sh """
-                            jfrog rt upload ~/mystore/${env.ZIP_FILE} "${repoPath}" --server-id=${env.ART_SERVER_ID}
+                            jf rt upload "~/mystore/${env.ZIP_FILE}" "${repoPath}" --server-id=${env.ART_SERVER_ID}
                         """
                     } else {
                         echo "Skipping Artifactory upload: unsupported branch ${env.BRANCH_NAME}"
