@@ -15,24 +15,14 @@ pipeline {
             }
         }
 
-        stage('Checking Encryption') {
+        stage('Check Encryption') {
             steps {
                 script {
-                    echo 'Checking if git-crypt is used...'
-                    sh '''
-                        if command -v git-crypt >/dev/null 2>&1; then
-                            echo "git-crypt found. Checking status..."
-                            git-crypt status -e || true
-                            echo "Attempting to unlock..."
-                            git-crypt unlock || true
-                        else
-                            echo "git-crypt not found, skipping unlock."
-                        fi
-                    '''
+                    echo 'Checking encrypted files...'
+                    sh 'git-crypt status -e'
                 }
             }
         }
-
 
         stage('Create ZIP') {
             steps {
