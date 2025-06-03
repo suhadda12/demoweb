@@ -35,14 +35,8 @@ pipeline {
                     -x ".git/*" \
                        "Jenkinsfile" \
                        ".workflow"
+                    mv "$ZIP_FILE" ~/mystore/
                 '''
-            }
-        }
-
-        stage('Done') {
-            steps {
-                echo "ZIP file created: ${env.ZIP_FILE}"
-                sh 'ls -lh "$ZIP_FILE"'
             }
         }
 
@@ -58,7 +52,7 @@ pipeline {
                     }
 
                     if (targetServer) {
-                        echo "Deploying ${env.ZIP_FILE} to ${targetServer}"
+                        echo "Deploying ~/mystore/${env.ZIP_FILE} to ${targetServer}"
                         sh """
                             rsync -avzhp -e "ssh -p ${env.SSH_PORT}" "$ZIP_FILE" "$targetServer"
                         """
@@ -66,6 +60,14 @@ pipeline {
                         echo "No deployment target for branch: ${env.BRANCH_NAME}. Skipping deployment."
                     }
                 }
+            }
+        }
+
+        stage('Cleanup store directory') {
+            steps {
+                echo "ZIP file created and moved to ~/mystore:"
+                sh 'ls -la ~/mystore/build.zip'
+                sh 'rm -fr ~/mystore/build.zip'
             }
         }
     }
