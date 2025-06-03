@@ -54,7 +54,7 @@ pipeline {
                     if (targetServer) {
                         echo "Deploying ~/mystore/${env.ZIP_FILE} to ${targetServer}"
                         sh """
-                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" "$ZIP_FILE" "$targetServer"
+                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ~/mystore/${env.ZIP_FILE} "${targetServer}"
                         """
                     } else {
                         echo "No deployment target for branch: ${env.BRANCH_NAME}. Skipping deployment."
