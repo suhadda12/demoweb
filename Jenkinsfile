@@ -9,6 +9,7 @@ pipeline {
         stage('Checkout Repository') {
             steps {
                 checkout scm
+                echo "Checked out branch: ${env.BRANCH_NAME}"
                 echo 'Listing all directories and files...'
                 sh 'ls -la'
             }
@@ -17,7 +18,7 @@ pipeline {
         stage('Check Encryption') {
             steps {
                 script {
-                    echo 'Listing encrypted files...'
+                    echo 'Checking encrypted files...'
                     sh 'git-crypt status -e'
 
                     echo 'Unlocking git-crypt...'
@@ -30,7 +31,7 @@ pipeline {
             steps {
                 echo "Creating ZIP file: ${env.ZIP_FILE}"
                 sh '''
-                    zip -r $ZIP_FILE . \
+                    zip -r "$ZIP_FILE" . \
                     -x ".git/*" \
                        "Jenkinsfile" \
                        ".workflow"
@@ -41,7 +42,7 @@ pipeline {
         stage('Done') {
             steps {
                 echo "ZIP file created: ${env.ZIP_FILE}"
-                sh 'ls -lh $ZIP_FILE'
+                sh 'ls -lh "$ZIP_FILE"'
             }
         }
     }
