@@ -6,7 +6,7 @@ pipeline {
         TEST_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/test'
         LIVE_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/main'
         SSH_PORT = '22'
-        ART_SERVER_ID = 'my-artifactory'
+        ART_SERVER_ID = 'my-tester'
         TEST_ART_REPO_PATH = 'tester-web1/test/'
         LIVE_ART_REPO_PATH = 'tester-web1/live/'
     }
