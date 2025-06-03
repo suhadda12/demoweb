@@ -3,9 +3,9 @@ pipeline {
 
     environment {
         ZIP_FILE = 'build.zip'
+        SSH_PORT = '22'
         TEST_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/test'
         LIVE_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/main'
-        SSH_PORT = '22'
         ART_SERVER_ID = 'my-tester'
         TEST_ART_REPO_PATH = 'tester-web1/test/'
         LIVE_ART_REPO_PATH = 'tester-web1/live/'
@@ -16,7 +16,6 @@ pipeline {
             steps {
                 checkout scm
                 echo "Checked out branch: ${env.BRANCH_NAME}"
-                echo 'Listing all directories and files...'
                 sh 'ls -la'
             }
         }
@@ -35,9 +34,8 @@ pipeline {
                 echo "Creating ZIP file: ${env.ZIP_FILE}"
                 sh '''
                     zip -r "$ZIP_FILE" . \
-                    -x ".git/*" \
-                       "Jenkinsfile" \
-                       ".workflow"
+                        -x ".git/*" "Jenkinsfile" ".workflow"
+                    mkdir -p ~/mystore
                     mv "$ZIP_FILE" ~/mystore/
                 '''
             }
@@ -47,7 +45,6 @@ pipeline {
             steps {
                 script {
                     def targetServer = null
-
                     if (env.BRANCH_NAME == 'main') {
                         targetServer = env.LIVE_SERVER
                     } else if (env.BRANCH_NAME.startsWith('test/')) {
@@ -55,12 +52,13 @@ pipeline {
                     }
 
                     if (targetServer) {
-                        echo "Deploying ~/mystore/${env.ZIP_FILE} to ${targetServer}"
+                        echo "Deploying to: ${targetServer}"
                         sh """
-                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ~/mystore/${env.ZIP_FILE} "${targetServer}"
+                            cd ~/mystore
+                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ${env.ZIP_FILE} "${targetServer}"
                         """
                     } else {
-                        echo "No deployment target for branch: ${env.BRANCH_NAME}. Skipping deployment."
+                        echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
                     }
                 }
             }
@@ -70,7 +68,6 @@ pipeline {
             steps {
                 script {
                     def repoPath = null
-
                     if (env.BRANCH_NAME == 'main') {
                         repoPath = env.LIVE_ART_REPO_PATH
                     } else if (env.BRANCH_NAME.startsWith('test/')) {
@@ -78,9 +75,10 @@ pipeline {
                     }
 
                     if (repoPath) {
-                        echo "Uploading to Artifactory path: ${repoPath}"
+                        echo "Uploading ${env.ZIP_FILE} to Artifactory path: ${repoPath}"
                         sh """
-                            jf rt upload "~/mystore/${env.ZIP_FILE}" "${repoPath}" --server-id=${env.ART_SERVER_ID}
+                            cd ~/mystore
+                            jf rt upload "${env.ZIP_FILE}" "${repoPath}" --server-id=${env.ART_SERVER_ID}
                         """
                     } else {
                         echo "Skipping Artifactory upload: unsupported branch ${env.BRANCH_NAME}"
@@ -91,9 +89,8 @@ pipeline {
 
         stage('Cleanup store directory') {
             steps {
-                echo "ZIP file created and moved to ~/mystore:"
-                sh 'ls -la ~/mystore/build.zip'
-                sh 'rm -fr ~/mystore/build.zip'
+                echo "Cleaning up ZIP file from ~/mystore"
+                sh 'rm -f ~/mystore/build.zip'
             }
         }
     }
