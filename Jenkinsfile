@@ -6,24 +6,41 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Repository') {
             steps {
                 checkout scm
+                echo 'Listing all directories and files...'
+                sh 'ls -la'
             }
         }
 
-        stage('Build ZIP') {
+        stage('Check Encryption') {
             steps {
+                script {
+                    echo 'Listing encrypted files...'
+                    sh 'git-crypt status -e'
+
+                    echo 'Unlocking git-crypt...'
+                    sh 'git-crypt unlock'
+                }
+            }
+        }
+
+        stage('Create ZIP') {
+            steps {
+                echo "Creating ZIP file: ${env.ZIP_FILE}"
                 sh '''
-                    echo "Membuat ZIP: $ZIP_FILE"
-                    zip -r $ZIP_FILE . -x ".git/*" "Jenkinsfile" ".workflow"
+                    zip -r $ZIP_FILE . \
+                    -x ".git/*" \
+                       "Jenkinsfile" \
+                       ".workflow"
                 '''
             }
         }
 
-        stage('Selesai') {
+        stage('Done') {
             steps {
-                echo "ZIP berhasil dibuat: ${env.ZIP_FILE}"
+                echo "ZIP file created: ${env.ZIP_FILE}"
                 sh 'ls -lh $ZIP_FILE'
             }
         }
