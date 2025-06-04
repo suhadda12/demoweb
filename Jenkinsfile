@@ -58,7 +58,7 @@ pipeline {
                             rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ${env.ZIP_FILE} "${targetServer}"
                         """
                     } else {
-                        echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
+                        echo "No valid sending target for branch: ${env.BRANCH_NAME}"
                     }
                 }
             }
