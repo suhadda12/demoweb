@@ -6,9 +6,9 @@ pipeline {
         SSH_PORT = '22'
         TEST_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/test'
         LIVE_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/main'
-        ART_URL_BASE = 'http://192.168.137.111:8081/artifactory/'
-        TEST_ART_REPO_PATH = 'tester-web1/test/'
-        LIVE_ART_REPO_PATH = 'tester-web1/live/'
+        ART_URL_BASE = 'http://192.168.137.111:8081/artifactory'  // ✅ tanpa trailing slash
+        TEST_ART_REPO_PATH = 'tester-web1/test/'                 // ✅ dengan repo key
+        LIVE_ART_REPO_PATH = 'tester-web1/live/'                 // ✅ dengan repo key
     }
 
     stages {
@@ -75,12 +75,13 @@ pipeline {
                     }
 
                     if (repoPath) {
-                        echo "Uploading ${env.ZIP_FILE} to Artifactory path: ${repoPath}"
-                        // Ambil username dan token dari Jenkins Credentials
+                        def fullUrl = "${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
+                        echo "Uploading to: ${fullUrl}"
+
                         withCredentials([usernamePassword(credentialsId: 'myjfrog', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
                             sh """
                                 cd ~/mystore
-                                curl -u $ART_USERNAME:$ART_API_TOKEN -T ${env.ZIP_FILE} "${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
+                                curl -u $ART_USERNAME:$ART_API_TOKEN -T ${env.ZIP_FILE} "${fullUrl}"
                             """
                         }
                     } else {
