@@ -75,14 +75,13 @@ pipeline {
                     }
 
                     if (repoPath) {
-                        def fullUrl = "${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
-                        echo "Uploading to: ${fullUrl}"
+                        echo "Uploading to: ${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
 
                         withCredentials([usernamePassword(credentialsId: 'myjfrog', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
-                            sh """
+                            sh '''
                                 cd ~/mystore
-                                curl -u $ART_USERNAME:$ART_API_TOKEN -T ${env.ZIP_FILE} "${fullUrl}"
-                            """
+                                curl -u "$ART_USERNAME:$ART_API_TOKEN" -T "$ZIP_FILE" "$ART_URL_BASE/$repoPath$ZIP_FILE"
+                            '''
                         }
                     } else {
                         echo "Skipping Artifactory upload: unsupported branch ${env.BRANCH_NAME}"
@@ -90,6 +89,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Cleanup store directory') {
             steps {
