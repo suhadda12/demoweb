@@ -80,7 +80,7 @@ pipeline {
                         withCredentials([usernamePassword(credentialsId: 'myjfrog', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
                             sh '''
                                 cd ~/mystore
-                                curl -u "$ART_USERNAME:$ART_API_TOKEN" -T "$ZIP_FILE" "$ART_URL_BASE/$repoPath$ZIP_FILE"
+                                curl -u "$ART_USERNAME:$ART_API_TOKEN" -T "$ZIP_FILE" "$ART_URL_BASE/$repoPath/$ZIP_FILE"
                             '''
                         }
                     } else {
