@@ -77,7 +77,7 @@ pipeline {
                     if (repoPath) {
                         echo "Uploading ${env.ZIP_FILE} to Artifactory path: ${repoPath}"
                         // Ambil username dan token dari Jenkins Credentials
-                        withCredentials([usernamePassword(credentialsId: 'artifactory-cred', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
+                        withCredentials([usernamePassword(credentialsId: 'myjfrog', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
                             sh """
                                 cd ~/mystore
                                 curl -u $ART_USERNAME:$ART_API_TOKEN -T ${env.ZIP_FILE} "${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
