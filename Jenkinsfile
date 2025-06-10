@@ -114,12 +114,12 @@ pipeline {
                         timeout(time: 24, unit: 'HOURS') {
                             input(
                                 message: """
-                            🚀 Auto deployment ke server berdasarkan branch '${env.BRANCH_NAME}'?
+                            Are you sure you want to continue the process for Auto deployment to server based on branch? '${env.BRANCH_NAME}'?
 
-                            Klik ✅ *Lanjutkan Auto Deployment* untuk memproses.
-                            Klik ❌ *Abort* jika tidak ingin melanjutkan.
+                            Click *Proceed to Auto Deployment* untuk memproses.
+                            Click  *Abort* jika tidak ingin melanjutkan.
                             """,
-                                ok: "✅ Lanjutkan Auto Deployment",
+                                ok: "Proceed to Auto Deployment",
                                 submitter: 'devops-team'
                             )
                         }
