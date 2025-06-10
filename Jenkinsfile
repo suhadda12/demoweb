@@ -113,7 +113,12 @@ pipeline {
                     if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('test/')) {
                         timeout(time: 24, unit: 'HOURS') {
                             input(
-                                message: "🚀 Auto deployment ke server berdasarkan branch '${env.BRANCH_NAME}'?\nKlik ✅ untuk lanjut, ❌ untuk batalkan.",
+                                message: """
+                            🚀 Auto deployment ke server berdasarkan branch '${env.BRANCH_NAME}'?
+
+                            Klik ✅ *Lanjutkan Auto Deployment* untuk memproses.
+                            Klik ❌ *Abort* jika tidak ingin melanjutkan.
+                            """,
                                 ok: "✅ Lanjutkan Auto Deployment",
                                 submitter: 'devops-team'
                             )
