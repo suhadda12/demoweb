@@ -4,8 +4,14 @@ pipeline {
     environment {
         ZIP_FILE = 'build.zip'
         SSH_PORT = '22'
-        TEST_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/test'
-        LIVE_SERVER = 'ubuntu@jfrog:/home/ubuntu/artifactory/main'
+
+        // Server & Path pemisahan yang benar
+        TEST_HOST = 'ubuntu@jfrog'
+        TEST_PATH = '/home/ubuntu/artifactory/test'
+
+        LIVE_HOST = 'ubuntu@jfrog'
+        LIVE_PATH = '/home/ubuntu/artifactory/main'
+
         ART_URL_BASE = 'http://192.168.137.111:8081/artifactory'
         TEST_ART_REPO_PATH = 'tester-web1/test/'
         LIVE_ART_REPO_PATH = 'tester-web1/live/'
@@ -70,18 +76,22 @@ pipeline {
         stage('Send ZIP') {
             steps {
                 script {
-                    def targetServer = null
+                    def targetHost = null
+                    def targetPath = null
+
                     if (env.BRANCH_NAME == 'main') {
-                        targetServer = env.LIVE_SERVER
+                        targetHost = env.LIVE_HOST
+                        targetPath = env.LIVE_PATH
                     } else if (env.BRANCH_NAME.startsWith('test/')) {
-                        targetServer = env.TEST_SERVER
+                        targetHost = env.TEST_HOST
+                        targetPath = env.TEST_PATH
                     }
 
-                    if (targetServer) {
-                        echo "Deploying to: ${targetServer}"
+                    if (targetHost && targetPath) {
+                        echo "Deploying ZIP to ${targetHost}:${targetPath}"
                         sh """
                             cd ~/mystore
-                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ${env.ZIP_FILE} "${targetServer}"
+                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ${env.ZIP_FILE} "${targetHost}:${targetPath}"
                         """
                     } else {
                         echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
@@ -118,25 +128,24 @@ pipeline {
         stage('Auto Deployment') {
             steps {
                 script {
-                    def targetServer = null
+                    def targetHost = null
 
                     if (env.BRANCH_NAME == 'main') {
-                        targetServer = env.LIVE_SERVER
+                        targetHost = env.LIVE_HOST
                     } else if (env.BRANCH_NAME.startsWith('test/')) {
-                        targetServer = env.TEST_SERVER
+                        targetHost = env.TEST_HOST
                     }
 
-                    if (targetServer) {
-                        echo "Menjalankan perintah 'hostname' di ${targetServer}"
+                    if (targetHost) {
+                        echo "Menjalankan perintah 'hostname' di ${targetHost}"
                         sh """
-                            ssh -p ${env.SSH_PORT} ${targetServer} 'hostname'
+                            ssh -p ${env.SSH_PORT} ${targetHost} 'hostname'
                         """
                     } else {
-                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan auto deployment."
+                        echo "Tidak ada server deployment untuk branch ini."
                     }
                 }
             }
         }
-
     }
 }
