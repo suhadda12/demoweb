@@ -107,12 +107,12 @@ pipeline {
             }
         }
 
-        stage('Approval Before Upload') {
+        stage('Approval Auto Deployment') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('test/')) {
                         timeout(time: 24, unit: 'HOURS') {
-                            input message: "Lanjut upload?", submitter: 'devops-team'
+                            input message: "Are you sure you want to continue the process for Auto deployment '${env.BRANCH_NAME}'?", submitter: 'devops-team'
                         }
                     } else {
                         echo "Branch '${env.BRANCH_NAME}' tidak memerlukan approval."
@@ -143,5 +143,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
