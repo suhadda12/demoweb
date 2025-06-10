@@ -41,43 +41,6 @@ pipeline {
             }
         }
 
-        stage('Deploy ZIP') {
-            steps {
-                script {
-                    def targetServer = null
-                    if (env.BRANCH_NAME == 'main') {
-                        targetServer = env.LIVE_SERVER
-                    } else if (env.BRANCH_NAME.startsWith('test/')) {
-                        targetServer = env.TEST_SERVER
-                    }
-
-                    if (targetServer) {
-                        echo "Deploying to: ${targetServer}"
-                        sh """
-                            cd ~/mystore
-                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ${env.ZIP_FILE} "${targetServer}"
-                        """
-                    } else {
-                        echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
-                    }
-                }
-            }
-        }
-
-        stage('Approval Before Upload') {
-            steps {
-                script {
-                    if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('test/')) {
-                        timeout(time: 24, unit: 'HOURS') {
-                            input message: "Lanjut upload?", submitter: 'devops-team'
-                        }
-                    } else {
-                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan approval."
-                    }
-                }
-            }
-        }
-
         stage('Upload to Artifactory') {
             steps {
                 script {
@@ -104,11 +67,49 @@ pipeline {
             }
         }
 
+        stage('Deploy ZIP') {
+            steps {
+                script {
+                    def targetServer = null
+                    if (env.BRANCH_NAME == 'main') {
+                        targetServer = env.LIVE_SERVER
+                    } else if (env.BRANCH_NAME.startsWith('test/')) {
+                        targetServer = env.TEST_SERVER
+                    }
+
+                    if (targetServer) {
+                        echo "Deploying to: ${targetServer}"
+                        sh """
+                            cd ~/mystore
+                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ${env.ZIP_FILE} "${targetServer}"
+                        """
+                    } else {
+                        echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
+                    }
+                }
+            }
+        }
+
+        stage('Approval Before Cleanup') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('test/')) {
+                        timeout(time: 24, unit: 'HOURS') {
+                            input message: "Lanjut Clean?", submitter: 'devops-team'
+                        }
+                    } else {
+                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan clean."
+                    }
+                }
+            }
+        }
+
         stage('Cleanup store directory') {
             steps {
                 echo "Cleaning up ZIP file from ~/mystore"
                 sh 'rm -f ~/mystore/build.zip'
             }
         }
+
     }
 }
