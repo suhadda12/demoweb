@@ -112,7 +112,11 @@ pipeline {
                 script {
                     if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('test/')) {
                         timeout(time: 24, unit: 'HOURS') {
-                            input message: "Are you sure you want to continue the process for auto deployment from branch '${env.BRANCH_NAME}'?", submitter: 'devops-team'
+                            input(
+                                message: "The artifact has been uploaded to the JFrog server and sent to the bastion/jump server. " +
+                                        "Are you sure you want to continue the process for auto deployment from branch '${env.BRANCH_NAME}'?",
+                                submitter: 'devops-team'
+                            )
                         }
                     } else {
                         echo "Branch '${env.BRANCH_NAME}' tidak memerlukan approval."
