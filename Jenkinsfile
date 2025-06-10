@@ -107,24 +107,15 @@ pipeline {
             }
         }
 
-        stage('Approval Before Auto Deployment') {
+        stage('Approval Before Upload') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('test/')) {
                         timeout(time: 24, unit: 'HOURS') {
-                            input(
-                                message: """
-                            Are you sure you want to continue the process for Auto deployment to server based on branch? '${env.BRANCH_NAME}'?
-
-                            Click *Proceed to Auto Deployment* untuk memproses.
-                            Click  *Abort* jika tidak ingin melanjutkan.
-                            """,
-                                ok: "Proceed to Auto Deployment",
-                                submitter: 'devops-team'
-                            )
+                            input message: "Lanjut upload?", submitter: 'devops-team'
                         }
                     } else {
-                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan approval deployment."
+                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan approval."
                     }
                 }
             }
