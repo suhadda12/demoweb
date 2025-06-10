@@ -67,7 +67,7 @@ pipeline {
             }
         }
 
-        stage('Deploy ZIP') {
+        stage('Send ZIP') {
             steps {
                 script {
                     def targetServer = null
@@ -90,24 +90,51 @@ pipeline {
             }
         }
 
-        stage('Approval Before Cleanup') {
+        stage('Cleanup store directory') {
+            steps {
+                echo "Cleaning up ZIP file from ~/mystore"
+                sh 'rm -f ~/mystore/build.zip'
+            }
+        }
+
+        stage('Approval Before Auto Deployment') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('test/')) {
                         timeout(time: 24, unit: 'HOURS') {
-                            input message: "Lanjut Clean?", submitter: 'devops-team'
+                            input(
+                                message: "🚀 Auto deployment ke server berdasarkan branch '${env.BRANCH_NAME}'?\nKlik ✅ untuk lanjut, ❌ untuk batalkan.",
+                                ok: "✅ Lanjutkan Auto Deployment",
+                                submitter: 'devops-team'
+                            )
                         }
                     } else {
-                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan clean."
+                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan approval deployment."
                     }
                 }
             }
         }
 
-        stage('Cleanup store directory') {
+        stage('Auto Deployment') {
             steps {
-                echo "Cleaning up ZIP file from ~/mystore"
-                sh 'rm -f ~/mystore/build.zip'
+                script {
+                    def targetServer = null
+
+                    if (env.BRANCH_NAME == 'main') {
+                        targetServer = env.LIVE_SERVER
+                    } else if (env.BRANCH_NAME.startsWith('test/')) {
+                        targetServer = env.TEST_SERVER
+                    }
+
+                    if (targetServer) {
+                        echo "Menjalankan perintah 'hostname' di ${targetServer}"
+                        sh """
+                            ssh -p ${env.SSH_PORT} ${targetServer} 'hostname'
+                        """
+                    } else {
+                        echo "Branch '${env.BRANCH_NAME}' tidak memerlukan auto deployment."
+                    }
+                }
             }
         }
 
