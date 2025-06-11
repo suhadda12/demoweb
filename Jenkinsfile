@@ -57,10 +57,10 @@ pipeline {
                         echo "Uploading to: ${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
 
                         withCredentials([usernamePassword(credentialsId: 'myjfrog', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
-                            sh '''
+                            sh """
                                 cd ~/mystore
-                                curl -u "$ART_USERNAME:$ART_API_TOKEN" -T "$ZIP_FILE" "${ART_URL_BASE}/${repoPath}${ZIP_FILE}"
-                            '''
+                                curl -u "\$ART_USERNAME:\$ART_API_TOKEN" -T "\$ZIP_FILE" "${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
+                            """
                         }
                     } else {
                         echo "Skipping Artifactory upload: unsupported branch ${env.BRANCH_NAME}"
@@ -91,7 +91,7 @@ pipeline {
                             sh '''
                                 export SSHPASS="$SSH_PASS"
                                 cd ~/mystore
-                                sshpass -e rsync -avzhp -e "ssh -o StrictHostKeyChecking=yes -p ''' + env.SSH_PORT + '''" "$ZIP_FILE" "$SSH_USER@''' + hostOnly + ''':''' + targetPath + '''"
+                                sshpass -e rsync -avzhp -e "ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT}" "${ZIP_FILE}" "${SSH_USER}@${hostOnly}:${targetPath}"
                             '''
                         }
                     } else {
