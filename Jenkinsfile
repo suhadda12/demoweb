@@ -88,7 +88,7 @@ pipeline {
 
                     if (targetHost && targetPath) {
                         echo "Deploying ZIP to ${targetHost}:${targetPath}"
-                        withCredentials([usernamePassword(credentialsId: 'my-ssh-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
+                        withCredentials([usernamePassword(credentialsId: 'jfrog-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                             def hostOnly = targetHost.split('@')[-1]
                             sh """
                                 cd ~/mystore
