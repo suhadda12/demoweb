@@ -27,10 +27,7 @@ pipeline {
 
         stage('Check Encryption') {
             steps {
-                script {
-                    echo 'Checking encrypted files...'
-                    sh 'git-crypt status -e || exit 0'
-                }
+                sh 'git-crypt status -e || exit 0'
             }
         }
 
@@ -60,10 +57,10 @@ pipeline {
                         echo "Uploading to: ${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
 
                         withCredentials([usernamePassword(credentialsId: 'myjfrog', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
-                            sh """
+                            sh '''
                                 cd ~/mystore
-                                curl -u "\$ART_USERNAME:\$ART_API_TOKEN" -T "\$ZIP_FILE" "${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
-                            """
+                                curl -u "$ART_USERNAME:$ART_API_TOKEN" -T "$ZIP_FILE" "${ART_URL_BASE}/${repoPath}${ZIP_FILE}"
+                            '''
                         }
                     } else {
                         echo "Skipping Artifactory upload: unsupported branch ${env.BRANCH_NAME}"
@@ -87,13 +84,15 @@ pipeline {
                     }
 
                     if (targetHost && targetPath) {
+                        def hostOnly = targetHost.split('@')[-1]
                         echo "Deploying ZIP to ${targetHost}:${targetPath}"
+
                         withCredentials([usernamePassword(credentialsId: 'jfrog-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
-                            def hostOnly = targetHost.split('@')[-1]
-                            sh """
+                            sh '''
+                                export SSHPASS="$SSH_PASS"
                                 cd ~/mystore
-                                sshpass -p "$SSH_PASS" rsync -avzhp -e "ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT}" ${env.ZIP_FILE} "$SSH_USER@${hostOnly}:${targetPath}"
-                            """
+                                sshpass -e rsync -avzhp -e "ssh -o StrictHostKeyChecking=yes -p ''' + env.SSH_PORT + '''" "$ZIP_FILE" "$SSH_USER@''' + hostOnly + ''':''' + targetPath + '''"
+                            '''
                         }
                     } else {
                         echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
@@ -127,7 +126,6 @@ pipeline {
             steps {
                 script {
                     def targetHost = null
-
                     if (env.BRANCH_NAME == 'main') {
                         targetHost = env.LIVE_HOST
                     } else if (env.BRANCH_NAME.startsWith('test/')) {
@@ -135,12 +133,14 @@ pipeline {
                     }
 
                     if (targetHost) {
+                        def hostOnly = targetHost.split('@')[-1]
                         echo "Menjalankan perintah 'hostname' di ${targetHost}"
-                        withCredentials([usernamePassword(credentialsId: 'my-ssh-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
-                            def hostOnly = targetHost.split('@')[-1]
-                            sh """
-                                sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "$SSH_USER@${hostOnly}" 'hostname'
-                            """
+
+                        withCredentials([usernamePassword(credentialsId: 'jfrog-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
+                            sh '''
+                                export SSHPASS="$SSH_PASS"
+                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ''' + env.SSH_PORT + ''' "$SSH_USER@''' + hostOnly + '''" hostname
+                            '''
                         }
                     } else {
                         echo "Tidak ada server deployment untuk branch ini."
