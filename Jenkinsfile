@@ -137,12 +137,13 @@ pipeline {
 
                     if (targetHost) {
                         def hostOnly = targetHost.split('@')[-1]
-                        echo "Menjalankan deployment.sh di ${targetHost}"
+                        echo "Menjalankan perintah 'hostname' di ${targetHost}"
 
                         withCredentials([usernamePassword(credentialsId: 'jfrog-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                             sh """
-                                export SSHPASS="${SSH_PASS}"
-                                sshpass -e ssh -o StrictHostKeyChecking=no -p "${env.SSH_PORT}" "${SSH_USER}@${hostOnly}" 'bash ~/ansible-deploy/deployment.sh'
+                                #!/bin/bash
+                                export SSHPASS="\$SSH_PASS"
+                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "\$SSH_USER@${hostOnly}" 'bash ~/ansible-deploy/deployment.sh'
                             """
                         }
                     } else {
@@ -151,6 +152,5 @@ pipeline {
                 }
             }
         }
-
     }
 }
