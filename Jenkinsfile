@@ -5,12 +5,11 @@ pipeline {
         ZIP_FILE = 'build.zip'
         SSH_PORT = '22'
 
-        // Server & Path pemisahan yang benar
         TEST_HOST = 'ubuntu@jfrog'
-        TEST_PATH = '/home/ubuntu/artifactory/test'
+        TEST_PATH = '~/artifactory/test'
 
         LIVE_HOST = 'ubuntu@jfrog'
-        LIVE_PATH = '/home/ubuntu/artifactory/main'
+        LIVE_PATH = '~/artifactory/main'
 
         ART_URL_BASE = 'http://192.168.137.111:8081/artifactory'
         TEST_ART_REPO_PATH = 'tester-web1/test/'
@@ -89,10 +88,13 @@ pipeline {
 
                     if (targetHost && targetPath) {
                         echo "Deploying ZIP to ${targetHost}:${targetPath}"
-                        sh """
-                            cd ~/mystore
-                            rsync -avzhp -e "ssh -p ${env.SSH_PORT}" ${env.ZIP_FILE} "${targetHost}:${targetPath}"
-                        """
+                        withCredentials([usernamePassword(credentialsId: 'my-ssh-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
+                            def hostOnly = targetHost.split('@')[-1]
+                            sh """
+                                cd ~/mystore
+                                sshpass -p "$SSH_PASS" rsync -avzhp -e "ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT}" ${env.ZIP_FILE} "$SSH_USER@${hostOnly}:${targetPath}"
+                            """
+                        }
                     } else {
                         echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
                     }
@@ -134,15 +136,17 @@ pipeline {
 
                     if (targetHost) {
                         echo "Menjalankan perintah 'hostname' di ${targetHost}"
-                        sh """
-                            ssh -p ${env.SSH_PORT} ${targetHost} 'hostname'
-                        """
+                        withCredentials([usernamePassword(credentialsId: 'my-ssh-password', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
+                            def hostOnly = targetHost.split('@')[-1]
+                            sh """
+                                sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "$SSH_USER@${hostOnly}" 'hostname'
+                            """
+                        }
                     } else {
                         echo "Tidak ada server deployment untuk branch ini."
                     }
                 }
             }
         }
-
     }
 }
