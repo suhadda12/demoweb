@@ -143,7 +143,7 @@ pipeline {
                             sh """
                                 #!/bin/bash
                                 export SSHPASS="\$SSH_PASS"
-                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "\$SSH_USER@${hostOnly}" /ansible-deploy/deployment.sh
+                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "\$SSH_USER@${hostOnly}" ~/ansible-deploy/deployment.sh
                             """
                         }
                     } else {
