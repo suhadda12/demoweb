@@ -34,12 +34,13 @@ pipeline {
         stage('Create ZIP') {
             steps {
                 echo "Creating ZIP file: ${env.ZIP_FILE}"
-                sh '''
-                    zip -r "$ZIP_FILE" . \
+                sh """
+                    #!/bin/bash
+                    zip -r "${ZIP_FILE}" . \\
                         -x ".git/*" "Jenkinsfile" ".workflow"
                     mkdir -p ~/mystore
-                    mv "$ZIP_FILE" ~/mystore/
-                '''
+                    mv "${ZIP_FILE}" ~/mystore/
+                """
             }
         }
 
@@ -58,6 +59,7 @@ pipeline {
 
                         withCredentials([usernamePassword(credentialsId: 'myjfrog', usernameVariable: 'ART_USERNAME', passwordVariable: 'ART_API_TOKEN')]) {
                             sh """
+                                #!/bin/bash
                                 cd ~/mystore
                                 curl -u "\$ART_USERNAME:\$ART_API_TOKEN" -T "\$ZIP_FILE" "${env.ART_URL_BASE}/${repoPath}${env.ZIP_FILE}"
                             """
@@ -88,11 +90,12 @@ pipeline {
                         echo "Deploying ZIP to ${targetHost}:${targetPath}"
 
                         withCredentials([usernamePassword(credentialsId: 'jfrog-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
-                            sh '''
-                                export SSHPASS="$SSH_PASS"
+                            sh """
+                                #!/bin/bash
+                                export SSHPASS="\$SSH_PASS"
                                 cd ~/mystore
-                                sshpass -e rsync -avzhp -e "ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT}" "${ZIP_FILE}" "${SSH_USER}@${hostOnly}:${targetPath}"
-                            '''
+                                sshpass -e rsync -avzhp -e "ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT}" "\$ZIP_FILE" "\$SSH_USER@${hostOnly}:${targetPath}"
+                            """
                         }
                     } else {
                         echo "No valid deployment target for branch: ${env.BRANCH_NAME}"
@@ -137,10 +140,11 @@ pipeline {
                         echo "Menjalankan perintah 'hostname' di ${targetHost}"
 
                         withCredentials([usernamePassword(credentialsId: 'jfrog-ssh', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
-                            sh '''
-                                export SSHPASS="$SSH_PASS"
-                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ''' + env.SSH_PORT + ''' "$SSH_USER@''' + hostOnly + '''" hostname
-                            '''
+                            sh """
+                                #!/bin/bash
+                                export SSHPASS="\$SSH_PASS"
+                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "\$SSH_USER@${hostOnly}" hostname
+                            """
                         }
                     } else {
                         echo "Tidak ada server deployment untuk branch ini."
