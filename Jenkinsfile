@@ -143,8 +143,7 @@ pipeline {
                             sh """
                                 #!/bin/bash
                                 export SSHPASS="\$SSH_PASS"
-                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "\$SSH_USER@${hostOnly}" hostname
-                            """
+                                sshpass -e ssh -o StrictHostKeyChecking=yes -p ${env.SSH_PORT} "\$SSH_USER@${hostOnly}" "bash ~/ansible-deploy/deployment.sh"
                         }
                     } else {
                         echo "Tidak ada server deployment untuk branch ini."
